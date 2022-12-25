@@ -48,7 +48,9 @@ jobs:
       - name: Store project version
         shell: bash
         run: |
-          mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec  | sed 's|-.*|| > jahia.version
+          VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
+          echo $VERSION | sed 's/-.*// > jahia.version
+          
       - name: Get branch name
         id: branch-name
         uses: tj-actions/branch-names@v5.4
