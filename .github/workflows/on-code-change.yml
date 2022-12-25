@@ -47,10 +47,8 @@ jobs:
       #     password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Store project version
         shell: bash
-        run: |
-          VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
-          echo $VERSION | sed 's/-.*// > jahia.version
-          
+        run: make version
+
       - name: Get branch name
         id: branch-name
         uses: tj-actions/branch-names@v5.4
