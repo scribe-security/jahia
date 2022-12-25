@@ -149,6 +149,49 @@ jobs:
           name: integration-artifacts
           path: image.tar
 
+
+  scribe-sbom:
+    name: Scribe sbom
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Save/Restore build artifacts from cache
+        uses: actions/cache@v3
+        with:
+          key: run-${{ github.run_id }}
+          path: |
+            ./**/target/**
+
+      - name: Download integration artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: integration-artifacts
+
+      - uses: scribe-security/action-bom@dev
+        id: gensbom_bom
+        with:
+          type: docker-archive
+          target: image.tar
+          verbose: 2
+          force: true
+          final-artifact: true
+          package-type: sbom,dpkg
+          components: packages,files
+          filter-regex: '**/tests/**,**/.git/**'
+          scribe-enable: false
+          product-key: ${{ secrets.productkey }}
+          scribe-client-id: ${{ secrets.clientid }}
+          scribe-client-secret: ${{ secrets.clientsecret }}
+
+      - uses: actions/upload-artifact@v3        
+        with:
+          name: sboms
+          path: |
+            ${{ steps.gensbom_bom.outputs.OUTPUT_PATH }}
+
+
   # integration-tests:
   #   name: Integration Tests (Standalone)
   #   needs: build
