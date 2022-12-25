@@ -46,7 +46,7 @@ jobs:
       #   with:
       #     username: ${{ secrets.DOCKERHUB_USERNAME }}
       #     password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
+ 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -135,13 +135,14 @@ jobs:
 
       - name: Store docker image
         shell: bash
-        run: docker save -o image.tar jahia/jahia-core-dev:${{steps.tags.outputs.image_tag}}
-      - uses: jahia/jahia-modules-action/slack-jahia@v2
-        if: ${{ failure() && github.event_name == 'push' }}
-        with:
-          job-event: "fail"
-          skip-docker: true
-          slack-webhook: ${{ secrets.SLACK_WEBHOOK_TEAM_PRODUCT_SNAPSHOTS_NOTIFICATIONS }}
+        run: docker save -o image.tar scribesecuriy.jfrog.io/scribe-docker-public-local/jahia/jahia-core-dev:${{steps.tags.outputs.image_tag}}
+
+      # - uses: jahia/jahia-modules-action/slack-jahia@v2
+      #   if: ${{ failure() && github.event_name == 'push' }}
+      #   with:
+      #     job-event: "fail"
+      #     skip-docker: true
+      #     slack-webhook: ${{ secrets.SLACK_WEBHOOK_TEAM_PRODUCT_SNAPSHOTS_NOTIFICATIONS }}
 
       - uses: actions/upload-artifact@v3
         with:
