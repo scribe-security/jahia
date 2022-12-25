@@ -680,7 +680,7 @@
                         <version>${surefire.plugin.version}</version>
                         <configuration>
                             <argLine>-Xmx2048m</argLine>
-                            <skipTests>false</skipTests>
+                            <skipTests>true</skipTests>
                             <threadCount>1</threadCount>
                         </configuration>
                     </plugin>
@@ -697,7 +697,7 @@
                         <version>${failsafe.plugin.version}</version>
                         <configuration>
                             <argLine>-Xmx2048m</argLine>
-                            <skipTests>false</skipTests>
+                            <skipTests>true</skipTests>
                             <threadCount>1</threadCount>
                             <includes>
                                 <include>**/*IT.java</include>

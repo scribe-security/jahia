@@ -26,7 +26,7 @@ version: ## Generate version files
 
 .PHONY: build
 build: ## Build package - removed unittest
-	mvn -U -ntp -s .github/maven.settings.xml -e -Dimage.tag=$(cat image.tag) clean install de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -Pgwt-production,docker  -Dbamboo.buildNumber=0
+	mvn -U -ntp -s .github/maven.settings.xml -e -DskipTests=true -Dimage.tag=$(cat image.tag) clean install de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -Pgwt-production,docker  -Dbamboo.buildNumber=0
 	
 #mvn -U -ntp -s .github/maven.settings.xml -e -Dimage.tag=$(cat image.tag) clean deploy de.qaware.maven:go-offline-maven-plug
 

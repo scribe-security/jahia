@@ -109,8 +109,11 @@ RUN wget -nv -O maven.zip ${MAVEN_BASE_URL}/${MAVEN_VER}/binaries/apache-maven-$
 
 COPY --chown=${C_USER}:${C_GROUP} settings.xml /home/${C_USER}/.m2/settings.xml
 
+RUN ls -lh
+
 # Download jahia plugin
 USER ${C_USER}
+
 RUN mvn -q -Pconfiguration ${JAHIA_PLUGIN}:help
 USER root
 
@@ -123,6 +126,8 @@ COPY conf/* /usr/local/tomcat/conf/
 
 COPY target/dependency/shared-libraries /usr/local/tomcat/lib
 COPY target/dependency/jdbc-drivers /usr/local/tomcat/lib
+COPY target/docker-jahia-core.bom.json /tmp
+
 COPY --chown=${C_USER}:${C_GROUP} target/dependency/jahia-war-data-package /usr/local/tomcat/digital-factory-data
 COPY --chown=${C_USER}:${C_GROUP} target/dependency/jahia-war /usr/local/tomcat/webapps/ROOT
 

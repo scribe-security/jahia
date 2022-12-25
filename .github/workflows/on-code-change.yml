@@ -131,7 +131,7 @@ jobs:
         # This is only done on PR, as master is pushed with mvn deploy in "Deploy artifacts to server repository"
         shell: bash
         if: ${{ github.event_name == 'pull_request' }}
-        run: docker push jahia/jahia-core-dev:${{steps.tags.outputs.image_tag}}
+        run: docker push scribesecuriy.jfrog.io/scribe-docker-public-local/jahia/jahia-core-dev:${{steps.tags.outputs.image_tag}}
 
       - name: Store docker image
         shell: bash
