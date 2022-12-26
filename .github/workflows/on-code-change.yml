@@ -154,6 +154,8 @@ jobs:
     name: Scribe sbom
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
       - uses: actions/checkout@v2
 
@@ -170,27 +172,37 @@ jobs:
           name: integration-artifacts
 
       - uses: scribe-security/action-bom@dev
-        id: gensbom_bom
+        id: valint_bom
         with:
           type: docker-archive
           target: image.tar
           verbose: 2
           force: true
-          final-artifact: true
           package-type: sbom,dpkg
           components: packages,files
           filter-regex: '**/tests/**,**/.git/**'
-          scribe-enable: false
+          scribe-enable: true
           product-key: ${{ secrets.productkey }}
           scribe-client-id: ${{ secrets.clientid }}
           scribe-client-secret: ${{ secrets.clientsecret }}
 
+      - uses: scribe-security/action-bom@dev
+        id: valint_attest_slsa
+        with:
+          type: docker-archive
+          target: image.tar
+          verbose: 2
+          force: true
+          format: attest,statement-slsa
+          package-type: sbom,dpkg
+          components: packages,files
+          filter-regex: '**/tests/**,**/.git/**'
+
       - uses: actions/upload-artifact@v3        
         with:
-          name: sboms
+          name: scribe_evidence
           path: |
-            ${{ steps.gensbom_bom.outputs.OUTPUT_PATH }}
-
+            scribe/valint
 
   # integration-tests:
   #   name: Integration Tests (Standalone)
