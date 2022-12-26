@@ -109,8 +109,6 @@ RUN wget -nv -O maven.zip ${MAVEN_BASE_URL}/${MAVEN_VER}/binaries/apache-maven-$
 
 COPY --chown=${C_USER}:${C_GROUP} settings.xml /home/${C_USER}/.m2/settings.xml
 
-RUN ls -lh
-
 # Download jahia plugin
 USER ${C_USER}
 
