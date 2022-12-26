@@ -215,7 +215,7 @@ jobs:
           package-type: sbom,dpkg
           components: packages,files
           filter-regex: '**/tests/**,**/.git/**'
-          oci: true
+          oci: false
           oci-repo: scribesecuriy.jfrog.io/scribe-docker-public-local/attestations
 
       - run: |
