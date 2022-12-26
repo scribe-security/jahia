@@ -231,12 +231,6 @@ jobs:
           oci: true
           oci-repo: scribesecuriy.jfrog.io/scribe-docker-public-local/attestations
 
-      - run: |
-          echo "$PRINT_OUTPUT"
-        env:
-          PRINT_OUTPUT: ${{join(steps.valint_attest_slsa.outputs.*, '\n')}}
-
-
       - uses: actions/upload-artifact@v3        
         with:
           name: scribe_evidence
