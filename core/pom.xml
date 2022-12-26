@@ -2042,7 +2042,7 @@
                         <version>${surefire.plugin.version}</version>
                         <configuration>
                             <argLine>-Xmx2048m</argLine>
-                            <skipTests>false</skipTests>
+                            <skipTests>true</skipTests>
                         </configuration>
                     </plugin>
                 </plugins>

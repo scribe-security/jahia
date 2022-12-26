@@ -84,6 +84,36 @@
                 </executions>
             </plugin>
 
+            <plugin>
+                <groupId>org.cyclonedx</groupId>
+                <artifactId>cyclonedx-maven-plugin</artifactId>
+                <version>2.7.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>makeAggregateBom</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <projectType>library</projectType>
+                    <schemaVersion>1.4</schemaVersion>
+                    <includeBomSerialNumber>true</includeBomSerialNumber>
+                    <includeCompileScope>true</includeCompileScope>
+                    <includeRuntimeScope>true</includeRuntimeScope>
+                    <includeProvidedScope>false</includeProvidedScope>
+                    <includeSystemScope>false</includeSystemScope>
+                    <includeTestScope>false</includeTestScope>
+                    <includeLicenseText>false</includeLicenseText>
+                    <outputReactorProjects>false</outputReactorProjects>
+                    <outputFormat>json</outputFormat>
+                    <excludeGroupId>org.jahia.test</excludeGroupId>
+                    <outputName>${project.artifactId}.bom</outputName>
+                    <!-- <addParentPoms>true</addParentPoms> -->
+                </configuration>
+            </plugin>
+
             <!-- tried to use plugin from spotify -->
             <plugin>
                 <groupId>com.spotify</groupId>
@@ -100,7 +130,7 @@
                 </executions>
                 <configuration>
                     <dockerfile>Dockerfile</dockerfile>
-                    <repository>jahia/${image.repo}${image.repo.classifier}</repository>
+                    <repository>scribesecuriy.jfrog.io/scribe-docker-public-local/jahia/${image.repo}${image.repo.classifier}</repository>
                     <tag>${image.tag}</tag>
                     <buildArgs>
                         <JAHIA_PLUGIN>org.jahia.server:jahia-maven-plugin:${jahia.plugin.version}</JAHIA_PLUGIN>
@@ -108,7 +138,6 @@
                     </buildArgs>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 
