@@ -152,7 +152,7 @@ jobs:
 
   scribe-sbom:
     name: Scribe sbom
-    # needs: build
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       id-token: write
