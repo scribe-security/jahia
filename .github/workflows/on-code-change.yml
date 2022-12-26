@@ -211,7 +211,7 @@ jobs:
           target: image.tar
           verbose: 2
           force: true
-          format: attest,statement-slsa
+          format: statement-slsa
           package-type: sbom,dpkg
           components: packages,files
           filter-regex: '**/tests/**,**/.git/**'
