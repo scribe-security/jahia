@@ -108,7 +108,9 @@
                     <includeLicenseText>false</includeLicenseText>
                     <outputReactorProjects>false</outputReactorProjects>
                     <outputFormat>json</outputFormat>
+                    <excludeGroupId>org.jahia.test</excludeGroupId>
                     <outputName>${project.artifactId}.bom</outputName>
+                    <!-- <addParentPoms>true</addParentPoms> -->
                 </configuration>
             </plugin>
 
