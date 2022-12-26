@@ -205,7 +205,8 @@ jobs:
       # * Collect required provenance fields (http://slsa.dev/provenance/v0.2)
       # * Store evidence as artifact (consumed by SLSA github APP)
 
-      # Login for OCI store for evidence
+      # OCI store for evidence (write permissions to oci-repo)
+      # Target is the remote image (read permissions to remote image)
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -217,8 +218,8 @@ jobs:
       - uses: scribe-security/action-bom@dev
         id: valint_attest_slsa
         with:
-          type: docker-archive
-          target: image.tar
+          type: docker-archive # docker
+          target: image.tar # jahia/jahai-core-dev:<version
           verbose: 2
           force: true
           format: attest,statement-slsa
