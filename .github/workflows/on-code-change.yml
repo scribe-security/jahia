@@ -15,144 +15,144 @@ env:
   ARTIFACTORY_URL: "https://scribesecuriy.jfrog.io"
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    outputs:
-      jahia_version: ${{ steps.tags.outputs.jahia_version }}
-      image_tag: ${{ steps.tags.outputs.image_tag }}
-    steps:
-      - uses: actions/checkout@v2
-      - name: Cache local Maven repository
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.m2/repository
-            /root/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-      - name: Save/Restore build artifacts from cache
-        uses: actions/cache@v3
-        with:
-          key: run-${{ github.run_id }}
-          path: |
-            ./**/target/**
-      # - name: Set environment variables from parameters
-      #   shell: bash
-      #   run: |
-      #     echo "NEXUS_USERNAME=${{ secrets.NEXUS_USERNAME }}" >> $GITHUB_ENV
-      #     echo "NEXUS_PASSWORD=${{ secrets.NEXUS_PASSWORD }}" >> $GITHUB_ENV
-      # - uses: docker/login-action@v2
-      #   with:
-      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     password: ${{ secrets.DOCKERHUB_PASSWORD }}
+  # build:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     jahia_version: ${{ steps.tags.outputs.jahia_version }}
+  #     image_tag: ${{ steps.tags.outputs.image_tag }}
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Cache local Maven repository
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: |
+  #           ~/.m2/repository
+  #           /root/.m2/repository
+  #         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-maven-
+  #     - name: Save/Restore build artifacts from cache
+  #       uses: actions/cache@v3
+  #       with:
+  #         key: run-${{ github.run_id }}
+  #         path: |
+  #           ./**/target/**
+  #     # - name: Set environment variables from parameters
+  #     #   shell: bash
+  #     #   run: |
+  #     #     echo "NEXUS_USERNAME=${{ secrets.NEXUS_USERNAME }}" >> $GITHUB_ENV
+  #     #     echo "NEXUS_PASSWORD=${{ secrets.NEXUS_PASSWORD }}" >> $GITHUB_ENV
+  #     # - uses: docker/login-action@v2
+  #     #   with:
+  #     #     username: ${{ secrets.DOCKERHUB_USERNAME }}
+  #     #     password: ${{ secrets.DOCKERHUB_PASSWORD }}
  
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ${{ env.ARTIFACTORY_URL }}
-          username: ${{ secrets.DEMO_ARTIFACTORY_USERNAME }}
-          password: ${{ secrets.DEMO_ARTIFACTORY_TOKEN }}
+  #     - name: Login to GitHub Container Registry
+  #       uses: docker/login-action@v2
+  #       with:
+  #         registry: ${{ env.ARTIFACTORY_URL }}
+  #         username: ${{ secrets.DEMO_ARTIFACTORY_USERNAME }}
+  #         password: ${{ secrets.DEMO_ARTIFACTORY_TOKEN }}
 
-      - name: Store project version
-        shell: bash
-        run: make version
+  #     - name: Store project version
+  #       shell: bash
+  #       run: make version
 
-      - name: Get branch name
-        id: branch-name
-        uses: tj-actions/branch-names@v5.4
-      - name: Determine tag
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" != "pull_request" ]; then
-            cp jahia.version image.tag
-          else
-            echo `cat jahia.version`-"${{ steps.branch-name.outputs.current_branch}}" > image.tag
-          fi
-      - id: tags
-        name: Set Output variables
-        run: | 
-          echo "::set-output name=jahia_version::`cat jahia.version`"
-          echo "::set-output name=image_tag::`cat image.tag`"
-      - name: Display Output variables
-        run: | 
-          echo "OUTPUT: jahia_version = ${{steps.tags.outputs.jahia_version}}"
-          echo "OUTPUT: image_tag = ${{steps.tags.outputs.image_tag}}"
+  #     - name: Get branch name
+  #       id: branch-name
+  #       uses: tj-actions/branch-names@v5.4
+  #     - name: Determine tag
+  #       shell: bash
+  #       run: |
+  #         if [ "${{ github.event_name }}" != "pull_request" ]; then
+  #           cp jahia.version image.tag
+  #         else
+  #           echo `cat jahia.version`-"${{ steps.branch-name.outputs.current_branch}}" > image.tag
+  #         fi
+  #     - id: tags
+  #       name: Set Output variables
+  #       run: | 
+  #         echo "::set-output name=jahia_version::`cat jahia.version`"
+  #         echo "::set-output name=image_tag::`cat image.tag`"
+  #     - name: Display Output variables
+  #       run: | 
+  #         echo "OUTPUT: jahia_version = ${{steps.tags.outputs.jahia_version}}"
+  #         echo "OUTPUT: image_tag = ${{steps.tags.outputs.image_tag}}"
 
-      # Series of steps only executed when pushing to master or to one of the maintenance branches
-      - name: Build package and load all dependencies into local Maven repository
-        shell: bash
-        if: ${{ github.event_name == 'push' }}
-        run: |
-          mvn -U -ntp -s .github/maven.settings.xml -e \
-            -Dimage.tag=${{steps.tags.outputs.image_tag}} \
-            clean deploy de.qaware.maven:go-offline-maven-plugin:resolve-dependencies \
-            -Pgwt-production,unit-tests,docker \
-            -Dbamboo.buildNumber=${{ github.run_id }}
-      - name: Compile GWT development
-        shell: bash
-        if: ${{ github.event_name == 'push' }}
-        run: |
-          cd gwt/
-          mvn -U -ntp -s ../.github/maven.settings.xml -e \
-            -Dimage.tag=${{steps.tags.outputs.image_tag}} \
-            clean deploy \
-            -Pgwt-development \
-            -Dbamboo.buildNumber=${{ github.run_id }}
-      - uses: jahia/jahia-modules-action/docker-tags@v2
-        if: ${{ github.event_name == 'push' }}
-        with:
-          docker_username: ${{ secrets.DOCKERHUB_USERNAME }}
-          docker_password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          version: ${{steps.tags.outputs.image_tag}}
-          repo: "jahia-core-dev"
-          dry-run: false
-      - name: Build graalvm image
-        shell: bash
-        if: ${{ github.event_name == 'push' }}
-        run: |
-          cd docker/docker-jahia-core/
-          mvn -U -ntp -s ../../.github/maven.settings.xml -e \
-            -Dimage.tag=${{steps.tags.outputs.image_tag}}-graalvm \
-            -Dimage.graalvm=true deploy \
-            -Dbamboo.buildNumber=${{ github.run_id }}
+  #     # Series of steps only executed when pushing to master or to one of the maintenance branches
+  #     - name: Build package and load all dependencies into local Maven repository
+  #       shell: bash
+  #       if: ${{ github.event_name == 'push' }}
+  #       run: |
+  #         mvn -U -ntp -s .github/maven.settings.xml -e \
+  #           -Dimage.tag=${{steps.tags.outputs.image_tag}} \
+  #           clean deploy de.qaware.maven:go-offline-maven-plugin:resolve-dependencies \
+  #           -Pgwt-production,unit-tests,docker \
+  #           -Dbamboo.buildNumber=${{ github.run_id }}
+  #     - name: Compile GWT development
+  #       shell: bash
+  #       if: ${{ github.event_name == 'push' }}
+  #       run: |
+  #         cd gwt/
+  #         mvn -U -ntp -s ../.github/maven.settings.xml -e \
+  #           -Dimage.tag=${{steps.tags.outputs.image_tag}} \
+  #           clean deploy \
+  #           -Pgwt-development \
+  #           -Dbamboo.buildNumber=${{ github.run_id }}
+  #     - uses: jahia/jahia-modules-action/docker-tags@v2
+  #       if: ${{ github.event_name == 'push' }}
+  #       with:
+  #         docker_username: ${{ secrets.DOCKERHUB_USERNAME }}
+  #         docker_password: ${{ secrets.DOCKERHUB_PASSWORD }}
+  #         version: ${{steps.tags.outputs.image_tag}}
+  #         repo: "jahia-core-dev"
+  #         dry-run: false
+  #     - name: Build graalvm image
+  #       shell: bash
+  #       if: ${{ github.event_name == 'push' }}
+  #       run: |
+  #         cd docker/docker-jahia-core/
+  #         mvn -U -ntp -s ../../.github/maven.settings.xml -e \
+  #           -Dimage.tag=${{steps.tags.outputs.image_tag}}-graalvm \
+  #           -Dimage.graalvm=true deploy \
+  #           -Dbamboo.buildNumber=${{ github.run_id }}
 
-      # Series of steps only executed when in a PR
-      - name: Build package and load all dependencies into local Maven repository
-        shell: bash
-        if: ${{ github.event_name == 'pull_request' }}
-        run: |
-          mvn -U -ntp -s .github/maven.settings.xml -e \
-            -Dimage.tag=${{steps.tags.outputs.image_tag}} \
-            clean install de.qaware.maven:go-offline-maven-plugin:resolve-dependencies \
-            -Pgwt-production,unit-tests,docker \
-            -Dbamboo.buildNumber=${{ github.run_id }}
-      - name: Push PR Docker image
-        # This is only done on PR, as master is pushed with mvn deploy in "Deploy artifacts to server repository"
-        shell: bash
-        if: ${{ github.event_name == 'pull_request' }}
-        run: docker push scribesecuriy.jfrog.io/scribe-docker-public-local/jahia/jahia-core-dev:${{steps.tags.outputs.image_tag}}
+  #     # Series of steps only executed when in a PR
+  #     - name: Build package and load all dependencies into local Maven repository
+  #       shell: bash
+  #       if: ${{ github.event_name == 'pull_request' }}
+  #       run: |
+  #         mvn -U -ntp -s .github/maven.settings.xml -e \
+  #           -Dimage.tag=${{steps.tags.outputs.image_tag}} \
+  #           clean install de.qaware.maven:go-offline-maven-plugin:resolve-dependencies \
+  #           -Pgwt-production,unit-tests,docker \
+  #           -Dbamboo.buildNumber=${{ github.run_id }}
+  #     - name: Push PR Docker image
+  #       # This is only done on PR, as master is pushed with mvn deploy in "Deploy artifacts to server repository"
+  #       shell: bash
+  #       if: ${{ github.event_name == 'pull_request' }}
+  #       run: docker push scribesecuriy.jfrog.io/scribe-docker-public-local/jahia/jahia-core-dev:${{steps.tags.outputs.image_tag}}
 
-      - name: Store docker image
-        shell: bash
-        run: docker save -o image.tar scribesecuriy.jfrog.io/scribe-docker-public-local/jahia/jahia-core-dev:${{steps.tags.outputs.image_tag}}
+  #     - name: Store docker image
+  #       shell: bash
+  #       run: docker save -o image.tar scribesecuriy.jfrog.io/scribe-docker-public-local/jahia/jahia-core-dev:${{steps.tags.outputs.image_tag}}
 
-      # - uses: jahia/jahia-modules-action/slack-jahia@v2
-      #   if: ${{ failure() && github.event_name == 'push' }}
-      #   with:
-      #     job-event: "fail"
-      #     skip-docker: true
-      #     slack-webhook: ${{ secrets.SLACK_WEBHOOK_TEAM_PRODUCT_SNAPSHOTS_NOTIFICATIONS }}
+  #     # - uses: jahia/jahia-modules-action/slack-jahia@v2
+  #     #   if: ${{ failure() && github.event_name == 'push' }}
+  #     #   with:
+  #     #     job-event: "fail"
+  #     #     skip-docker: true
+  #     #     slack-webhook: ${{ secrets.SLACK_WEBHOOK_TEAM_PRODUCT_SNAPSHOTS_NOTIFICATIONS }}
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: integration-artifacts
-          path: image.tar
+  #     - uses: actions/upload-artifact@v3
+  #       with:
+  #         name: integration-artifacts
+  #         path: image.tar
 
 
   scribe-sbom:
     name: Scribe sbom
-    needs: build
+    # needs: build
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -161,35 +161,35 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Save/Restore build artifacts from cache
-        uses: actions/cache@v3
-        with:
-          key: run-${{ github.run_id }}
-          path: |
-            ./**/target/**
+      # - name: Save/Restore build artifacts from cache
+      #   uses: actions/cache@v3
+      #   with:
+      #     key: run-${{ github.run_id }}
+      #     path: |
+      #       ./**/target/**
 
-      - name: Download integration artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: integration-artifacts
+      # - name: Download integration artifacts
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: integration-artifacts
 
-      # SBOM Demo - Target: image, Evidence: SBOM
-      # * Collect packages and all files metadata, scope maven packages (compile,runtime), All Deb installed cataloger.
-      # * Upload sbom to scribe for scanning and display.
-      - uses: scribe-security/action-bom@dev
-        id: valint_bom
-        with:
-          type: docker-archive # docker
-          target: image.tar # jahia/jahia-core-dev:<version>
-          verbose: 2
-          force: true
-          package-type: sbom,dpkg
-          components: packages,files
-          filter-regex: '**/tests/**,**/.git/**'
-          scribe-enable: true
-          product-key: ${{ secrets.productkey }}
-          scribe-client-id: ${{ secrets.clientid }}
-          scribe-client-secret: ${{ secrets.clientsecret }}
+      # # SBOM Demo - Target: image, Evidence: SBOM
+      # # * Collect packages and all files metadata, scope maven packages (compile,runtime), All Deb installed cataloger.
+      # # * Upload sbom to scribe for scanning and display.
+      # - uses: scribe-security/action-bom@dev
+      #   id: valint_bom
+      #   with:
+      #     type: docker-archive # docker
+      #     target: image.tar # jahia/jahia-core-dev:<version>
+      #     verbose: 2
+      #     force: true
+      #     package-type: sbom,dpkg
+      #     components: packages,files
+      #     filter-regex: '**/tests/**,**/.git/**'
+      #     scribe-enable: true
+      #     product-key: ${{ secrets.productkey }}
+      #     scribe-client-id: ${{ secrets.clientid }}
+      #     scribe-client-secret: ${{ secrets.clientsecret }}
 
       # Signing - Target: image, Evidence: Signed-SBOM (attest)
       # * Collect packages and all files metadata, scope maven packages (compile,runtime), All Deb installed cataloger.
@@ -220,8 +220,10 @@ jobs:
       - uses: scribe-security/action-bom@dev
         id: valint_attest_slsa
         with:
-          type: docker-archive # docker
-          target: image.tar # jahia/jahai-core-dev:<version
+          # type: docker-archive # docker
+          # target: image.tar # jahia/jahai-core-dev:<version
+          type: docker
+          docker: busybox:latest
           verbose: 2
           force: true
           format: attest,statement-slsa
