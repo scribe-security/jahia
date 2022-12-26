@@ -190,13 +190,19 @@ jobs:
           scribe-client-secret: ${{ secrets.clientsecret }}
 
 
-      # Signing Demo - Target: image, Evidence: Signed-sbom (attest)
+      # Signing - Target: image, Evidence: Signed-SBOM (attest)
       # * Collect packages and all files metadata, scope maven packages (compile,runtime), All Deb installed cataloger.
       # * Sign evidence using Sigtore keyless flow using the OIDC Github workload identity (see `id-token` permission).
       # * Store evidence as artifact
       # * Store evidence OCI registry (needs write permission to `oci-repo`).
+      #
+      # Verify - Target: image, Evidence: Signed-SBOM (attest)
+      # * Download scribe_evidence, extract evidence dir
+      #    *`valint verify <image.tar, jahia/jahia-core-dev:<tag> --output-directory <extracted dir>`
+      # * Use OCI stored evidence.
+      # `valint verify <image.tar, jahai/jahia-core-dev:<tag> --oci -oci-repo scribesecuriy.jfrog.io/scribe-docker-public-local/attestations`
 
-      # SLSA Demo - Target: image, Evidence: SLSA provenance statement (statement-slsa)
+      # SLSA - Target: image, Evidence: SLSA provenance statement (statement-slsa)
       # * Collect required provenance fields (http://slsa.dev/provenance/v0.2)
       # * Store evidence as artifact (consumed by SLSA github APP)
       - uses: scribe-security/action-bom@dev
