@@ -152,42 +152,42 @@ jobs:
 
   scribe-sbom:
     name: Scribe sbom
-    needs: build
+    # needs: build
     runs-on: ubuntu-latest
     permissions:
       id-token: write
     steps:
       - uses: actions/checkout@v2
 
-      - name: Save/Restore build artifacts from cache
-        uses: actions/cache@v3
-        with:
-          key: run-${{ github.run_id }}
-          path: |
-            ./**/target/**
+      # - name: Save/Restore build artifacts from cache
+      #   uses: actions/cache@v3
+      #   with:
+      #     key: run-${{ github.run_id }}
+      #     path: |
+      #       ./**/target/**
 
-      - name: Download integration artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: integration-artifacts
+      # - name: Download integration artifacts
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: integration-artifacts
 
-      # SBOM Demo - Target: image, Evidence: SBOM
-      # * Collect packages and all files metadata, scope maven packages (compile,runtime), All Deb installed cataloger.
-      # * Upload sbom to scribe for scanning and display.
-      - uses: scribe-security/action-bom@dev
-        id: valint_bom
-        with:
-          type: docker-archive # docker
-          target: image.tar # jahia/jahia-core-dev:<version>
-          verbose: 2
-          force: true
-          package-type: sbom,dpkg
-          components: packages,files
-          filter-regex: '**/tests/**,**/.git/**'
-          scribe-enable: true
-          product-key: ${{ secrets.productkey }}
-          scribe-client-id: ${{ secrets.clientid }}
-          scribe-client-secret: ${{ secrets.clientsecret }}
+      # # SBOM Demo - Target: image, Evidence: SBOM
+      # # * Collect packages and all files metadata, scope maven packages (compile,runtime), All Deb installed cataloger.
+      # # * Upload sbom to scribe for scanning and display.
+      # - uses: scribe-security/action-bom@dev
+      #   id: valint_bom
+      #   with:
+      #     type: docker-archive # docker
+      #     target: image.tar # jahia/jahia-core-dev:<version>
+      #     verbose: 2
+      #     force: true
+      #     package-type: sbom,dpkg
+      #     components: packages,files
+      #     filter-regex: '**/tests/**,**/.git/**'
+      #     scribe-enable: true
+      #     product-key: ${{ secrets.productkey }}
+      #     scribe-client-id: ${{ secrets.clientid }}
+      #     scribe-client-secret: ${{ secrets.clientsecret }}
 
       # Signing - Target: image, Evidence: Signed-SBOM (attest)
       # * Collect packages and all files metadata, scope maven packages (compile,runtime), All Deb installed cataloger.
@@ -207,24 +207,24 @@ jobs:
       - uses: scribe-security/action-bom@dev
         id: valint_attest_slsa
         with:
-          type: docker-archive
-          target: image.tar
+          type: docker
+          target: busybox:latest
           verbose: 2
           force: true
-          format: statement-slsa
+          format: attest,statement-slsa
           package-type: sbom,dpkg
           components: packages,files
           filter-regex: '**/tests/**,**/.git/**'
           oci: false
           oci-repo: scribesecuriy.jfrog.io/scribe-docker-public-local/attestations
 
-      - uses: actions/upload-artifact@v3        
-        with:
-          name: scribe_evidence
-          path: |
-            scribe/valint
+      # - uses: actions/upload-artifact@v3        
+      #   with:
+      #     name: scribe_evidence
+      #     path: |
+      #       scribe/valint
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: provenance
           path: ${{ steps.valint_attest_slsa.outputs.slsa_path }}
