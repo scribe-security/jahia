@@ -227,7 +227,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: provenance
-          path: ${{ steps.valint_attest_slsa.outputs.slsa_path }}
+          path: ${{ steps.valint_attest_slsa.outputs.OUTPUT_PATH }}
 
   # integration-tests:
   #   name: Integration Tests (Standalone)
